@@ -1,17 +1,36 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { FiPower, FiTrash2 } from "react-icons/fi";
 
 import "./styles.css";
 
+import api from "../../services/api";
+
 import logoImg from "../../assets/logo.svg";
 
 export default function Profile() {
+  const idONG = localStorage.getItem("ongID");
+  const nameONG = localStorage.getItem("nameONG");
+
+  const [incidents, setIncidents] = useState([]);
+
+  useEffect(() => {
+    async function returnIncidents() {
+      const response = await api.get("profile", {
+        headers: {
+          authorization: idONG,
+        },
+      });
+      setIncidents(response.data);
+    }
+    returnIncidents();
+  }, [idONG]);
+
   return (
     <div className="profile-container">
       <header>
         <img src={logoImg} alt="Be the hero" />
-        <span>Bem vinda, Luisa Mel</span>
+        <span>Bem vindo(a), {nameONG}</span>
 
         <Link to="/incidents/new" className="button">
           Cadastrar novo caso
@@ -21,69 +40,36 @@ export default function Profile() {
         </button>
       </header>
 
-      <h1>Casos cadastrados</h1>
+      {incidents.length === 0 && (
+        <h1 style={{ width: "100%", textAlign: "center", color: "#3a3a3a" }}>
+          Sem casos cadastrados :()
+        </h1>
+      )}
 
-      <ul>
-        <li>
-          <strong>CASO:</strong>
-          <p>Caso teste</p>
+      {incidents.length !== 0 && (
+        <>
+          <h1>Casos cadastrados</h1>
 
-          <strong>DESCRIÇÃO:</strong>
-          <p>Descrição teste</p>
+          <ul>
+            {incidents.map((incident) => (
+              <li key={incident.id}>
+                <strong>CASO:</strong>
+                <p>{incident.title}</p>
 
-          <strong>VALOR:</strong>
-          <p>R$ 120,00</p>
+                <strong>DESCRIÇÃO:</strong>
+                <p>{incident.description}</p>
 
-          <button type="button">
-            <FiTrash2 />
-          </button>
-        </li>
+                <strong>VALOR:</strong>
+                <p>R$ {incident.value}</p>
 
-        <li>
-          <strong>CASO:</strong>
-          <p>Caso teste</p>
-
-          <strong>DESCRIÇÃO:</strong>
-          <p>Descrição teste</p>
-
-          <strong>VALOR:</strong>
-          <p>R$ 120,00</p>
-
-          <button type="button">
-            <FiTrash2 />
-          </button>
-        </li>
-
-        <li>
-          <strong>CASO:</strong>
-          <p>Caso teste</p>
-
-          <strong>DESCRIÇÃO:</strong>
-          <p>Descrição teste</p>
-
-          <strong>VALOR:</strong>
-          <p>R$ 120,00</p>
-
-          <button type="button">
-            <FiTrash2 />
-          </button>
-        </li>
-
-        <li>
-          <strong>CASO:</strong>
-          <p>Caso teste</p>
-
-          <strong>DESCRIÇÃO:</strong>
-          <p>Descrição teste</p>
-
-          <strong>VALOR:</strong>
-          <p>R$ 120,00</p>
-
-          <button type="button">
-            <FiTrash2 />
-          </button>
-        </li>
-      </ul>
+                <button type="button">
+                  <FiTrash2 />
+                </button>
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
     </div>
   );
 }
